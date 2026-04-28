@@ -63,7 +63,7 @@ const TaniCareLogo = ({ size = 'md', theme = 'dark' }) => {
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          Tani<span style={{ color: '#10B981' }}>Care</span>
+          Agro<span style={{ color: '#10B981' }}>Plus</span>
         </span>
         {(size === 'md' || size === 'lg' || size === 'splash') && (
           <span

@@ -86,16 +86,10 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             className="big-greet"
           >
-            Halo, <span className="highlight">{user?.name?.split(' ')[0] || 'Petani'}!</span>
+            Halo, <span className="highlight">{user?.name?.split(' ')[0] || 'Rekan'}!</span>
           </motion.h2>
           <div className="hero-meta-v2">
-            <p className="hero-desc">Data lahan Anda sinkron dan stabil hari ini.</p>
-            <button 
-              onClick={async () => { await logout(); }}
-              className="logout-btn-mini"
-            >
-              🚪 Keluar
-            </button>
+            <p className="hero-desc">Data proyek Anda sinkron dan stabil hari ini.</p>
           </div>
         </div>
         
@@ -110,7 +104,7 @@ const Home = () => {
                  </svg>
               </div>
               <div className="status-text">
-                 <h4>Kesehatan Lahan</h4>
+                 <h4>Kesehatan Aset</h4>
                  <p>{scannedCrops.length > 0 ? 'Data terverifikasi scanner' : 'Lakukan scan di Panel Kendali'}</p>
               </div>
            </div>
@@ -148,34 +142,43 @@ const Home = () => {
             </div>
          </div>
 
-         {/* Quick Action Luxury Cards */}
-         <div className="ultra-card flex-center interactive">
-            <div className="action-circle-bg bg-emerald">
-               <TrendingUp size={32} />
+         {/* Multi-Division Feature Cards */}
+         <div className="div-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', width: '100%', marginBottom: '24px' }}>
+            <div className="ultra-card flex-center interactive" style={{ flexDirection: 'column', textAlign: 'center', padding: '24px', alignItems: 'center' }} onClick={() => window.location.href='/dashboard'}>
+               <div className="action-circle-bg bg-emerald" style={{ marginBottom: '16px' }}><Leaf size={32} /></div>
+               <div className="action-info">
+                  <h3>IoT Agrikultur</h3>
+                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>Kelembapan & Irigasi</p>
+               </div>
             </div>
-            <div className="action-info">
-               <h3>Marketplace</h3>
-               <p>Beli bibit premium</p>
+            <div className="ultra-card flex-center interactive" style={{ flexDirection: 'column', textAlign: 'center', padding: '24px', alignItems: 'center' }} onClick={() => window.location.href='/dashboard'}>
+               <div className="action-circle-bg bg-sun" style={{ marginBottom: '16px' }}><ShieldCheck size={32} /></div>
+               <div className="action-info">
+                  <h3>Pemantauan Ternak</h3>
+                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>Suhu Kandang & Pakan</p>
+               </div>
             </div>
-            <NavLink to="/market" className="action-arrow"><ChevronRight /></NavLink>
-         </div>
-
-         <div className="ultra-card flex-center interactive">
-            <div className="action-circle-bg bg-sun">
-               <Zap size={32} />
+            <div className="ultra-card flex-center interactive" style={{ flexDirection: 'column', textAlign: 'center', padding: '24px', alignItems: 'center' }} onClick={() => window.location.href='/dashboard'}>
+               <div className="action-circle-bg" style={{ marginBottom: '16px', background: 'var(--p-sky)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Droplets size={32} /></div>
+               <div className="action-info">
+                  <h3>Kualitas Air Kolam</h3>
+                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>pH & Oksigen Terlarut</p>
+               </div>
             </div>
-            <div className="action-info">
-               <h3>Kontrol IoT</h3>
-               <p>{hasCrops ? 'Sistem otomatis aktif' : 'Belum ada jadwal'}</p>
+            <div className="ultra-card flex-center interactive" style={{ flexDirection: 'column', textAlign: 'center', padding: '24px', alignItems: 'center' }} onClick={() => window.location.href='/dashboard'}>
+               <div className="action-circle-bg" style={{ marginBottom: '16px', background: '#d97706', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Zap size={32} /></div>
+               <div className="action-info">
+                  <h3>Satelit Kehutanan</h3>
+                  <p style={{ fontSize: '0.85rem', marginTop: '5px' }}>Deteksi Api & Titik Panas</p>
+               </div>
             </div>
-            <NavLink to="/dashboard" className="action-arrow"><ChevronRight /></NavLink>
          </div>
 
          {/* Monitoring Section */}
          <div className="col-full monitoring-section">
             <div className="section-title-ultra">
                <h3>Monitor Aktif</h3>
-               <span className="badge-pill">{monitoringList.length} Lahan Online</span>
+               <span className="badge-pill">{monitoringList.length} Proyek Online</span>
             </div>
             <div className="monitoring-list-ultra">
                {monitoringList.length > 0 ? (
@@ -189,7 +192,7 @@ const Home = () => {
                           <div className="crop-avatar"><Leaf size={24} /></div>
                           <div className="plot-text">
                              <h4>{plot.name}</h4>
-                             <span>{plot.crop}</span>
+                             <span>{plot.division || 'Pertanian'} • {plot.variety || 'Tanaman'}</span>
                           </div>
                        </div>
                        <div className="plot-stats">
@@ -207,8 +210,8 @@ const Home = () => {
                ) : (
                  <div className="empty-plot-silk glass-panel">
                     <Activity size={40} className="glow-emerald" />
-                    <h4>Belum Ada Lahan Budidaya</h4>
-                    <p>Mulai tambahkan tanaman atau plot lahan Anda di Panel Kendali.</p>
+                    <h4>Belum Ada Proyek</h4>
+                    <p>Mulai tambahkan aset atau proyek Anda di Panel Kendali.</p>
                     <NavLink to="/dashboard" className="btn-premium sm">Buka Panel <ChevronRight size={14} /></NavLink>
                  </div>
                )}

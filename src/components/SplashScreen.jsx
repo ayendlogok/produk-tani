@@ -33,7 +33,7 @@ const SplashScreen = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          Budidaya Cerdas, Panen Maksimal
+          Solusi Agrikultur & Peternakan Terpadu
         </motion.p>
       </motion.div>
     </div>

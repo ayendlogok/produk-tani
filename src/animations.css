@@ -1,0 +1,312 @@
+/* ============================================================ 
+   AgroPlus — Global Premium Animations
+   Hanya animasi tambahan, tidak mengubah logika yang sudah ada
+   ============================================================ */
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  50%       { box-shadow: 0 0 24px 6px rgba(16, 185, 129, 0.25); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes streak {
+  0%   { opacity: 0; transform: scaleX(0); transform-origin: left; }
+  50%  { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(0); transform-origin: right; }
+}
+
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  50%  { opacity: 1; transform: scale(1.05); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slideFromLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideFromRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(14px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(14px) rotate(-360deg); }
+}
+
+@keyframes ripple {
+  0%   { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+/* ── Auto-apply entrance animations ───────────────────────── */
+
+.ultra-card {
+  animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.glass-panel {
+  animation: fadeIn 0.4s ease both;
+}
+
+/* Staggered delay for sibling cards inside grid */
+.ultra-card:nth-child(1) { animation-delay: 0.05s; }
+.ultra-card:nth-child(2) { animation-delay: 0.12s; }
+.ultra-card:nth-child(3) { animation-delay: 0.19s; }
+.ultra-card:nth-child(4) { animation-delay: 0.26s; }
+.ultra-card:nth-child(5) { animation-delay: 0.33s; }
+.ultra-card:nth-child(6) { animation-delay: 0.40s; }
+
+/* ── Hover micro-animations ────────────────────────────────── */
+
+/* Shimmer effect on btn-premium hover */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-premium::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.35) 50%,
+    transparent 100%
+  );
+  transition: left 0.4s ease;
+}
+
+.btn-premium:hover::after {
+  left: 160%;
+}
+
+/* Pulse glow on interactive elements */
+.btn-premium:focus-visible,
+.ultra-card.interactive:focus-visible {
+  animation: pulse-glow 1.5s ease infinite;
+}
+
+/* Icons in action circle float animation */
+.action-circle-bg {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Stagger float delays so each card breathes at different rate */
+.ultra-card:nth-child(1) .action-circle-bg { animation-delay: 0s; }
+.ultra-card:nth-child(2) .action-circle-bg { animation-delay: 0.8s; }
+.ultra-card:nth-child(3) .action-circle-bg { animation-delay: 1.6s; }
+.ultra-card:nth-child(4) .action-circle-bg { animation-delay: 2.4s; }
+
+/* ── Navigation sidebar entries ────────────────────────────── */
+.premium-sidebar {
+  animation: slideFromLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Bottom mobile nav ─────────────────────────────────────── */
+.bottom-nav-silk {
+  animation: fadeSlideDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.2s;
+}
+
+/* ── Modal entrance ────────────────────────────────────────── */
+.add-modal-silk {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Modal overlay fade */
+.modal-overlay-silk {
+  animation: fadeIn 0.25s ease both;
+}
+
+/* ── Scan result panel ─────────────────────────────────────── */
+.scan-result-card {
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Product cards in Market ───────────────────────────────── */
+.product-card-ultra {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.product-card-ultra:nth-child(1) { animation-delay: 0.03s; }
+.product-card-ultra:nth-child(2) { animation-delay: 0.08s; }
+.product-card-ultra:nth-child(3) { animation-delay: 0.13s; }
+.product-card-ultra:nth-child(4) { animation-delay: 0.18s; }
+.product-card-ultra:nth-child(5) { animation-delay: 0.23s; }
+.product-card-ultra:nth-child(6) { animation-delay: 0.28s; }
+
+/* ── Crop / monitoring list rows ───────────────────────────── */
+.monitoring-list-ultra > * {
+  animation: slideFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.monitoring-list-ultra > *:nth-child(1) { animation-delay: 0.05s; }
+.monitoring-list-ultra > *:nth-child(2) { animation-delay: 0.12s; }
+.monitoring-list-ultra > *:nth-child(3) { animation-delay: 0.19s; }
+
+/* ── Page-level hero area ──────────────────────────────────── */
+.hero-ultra-section {
+  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.1s;
+}
+
+.big-greet {
+  animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.15s;
+}
+
+/* ── Status / sensor badges blink-pulse ─────────────────────── */
+.blink {
+  animation: pulse-glow 2s ease-in-out infinite !important;
+}
+
+/* ── Category pills in market ──────────────────────────────── */
+.pill {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              color 0.2s ease;
+}
+
+.pill:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.pill.active {
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Header entrance ────────────────────────────────────────── */
+.main-header-silk {
+  animation: fadeSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Footer market hint ─────────────────────────────────────── */
+.market-footer-hint {
+  animation: fadeIn 0.6s ease both;
+  animation-delay: 0.5s;
+}
+
+/* ── Subtle background aurora floating orbs ─────────────────── */
+.bg-glow {
+  animation: float 10s ease-in-out infinite;
+}
+
+/* ============================================================ 
+   Agro Nature Particles (Daun Jatuh & Gelembung Air)
+   Ditambahkan tanpa menyentuh file React/HTML
+   ============================================================ */
+
+@keyframes fallingLeaves {
+  0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(110vh) rotate(360deg) translateX(150px); opacity: 0; }
+}
+
+@keyframes risingBubbles {
+  0% { transform: translateY(110vh) scale(0.5); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+@keyframes floatingSpores {
+  0% { transform: translate(0, 0) scale(0.8) rotate(0deg); opacity: 0; }
+  30% { opacity: 0.4; }
+  70% { opacity: 0.4; }
+  100% { transform: translate(-100px, -100px) scale(1.5) rotate(180deg); opacity: 0; }
+}
+
+body::before {
+  content: '🍃';
+  position: fixed;
+  top: -10%;
+  left: 10%;
+  font-size: 28px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: fallingLeaves 18s linear infinite;
+  filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.4));
+}
+
+body::after {
+  content: '💧';
+  position: fixed;
+  bottom: -10%;
+  right: 15%;
+  font-size: 24px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: risingBubbles 14s ease-in-out infinite;
+  animation-delay: 4s;
+  filter: drop-shadow(0 5px 15px rgba(14, 165, 233, 0.4));
+}
+
+.ultra-wrapper::before {
+  content: '🍂';
+  position: fixed;
+  top: -10%;
+  right: 25%;
+  font-size: 22px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: fallingLeaves 22s linear infinite;
+  animation-delay: 8s;
+  filter: drop-shadow(0 5px 15px rgba(217, 119, 6, 0.4));
+}
+
+.ultra-wrapper::after {
+  content: '✨';
+  position: fixed;
+  bottom: 20%;
+  left: 20%;
+  font-size: 20px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: floatingSpores 16s ease-in-out infinite;
+  animation-delay: 2s;
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+}

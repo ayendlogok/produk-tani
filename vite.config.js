@@ -12,9 +12,9 @@ export default defineConfig({
         enabled: true
       },
       manifest: {
-        name: 'TaniCare App',
-        short_name: 'TaniCare',
-        description: 'Aplikasi Manajemen Pertanian Cerdas',
+        name: 'AgroPlus App',
+        short_name: 'AgroPlus',
+        description: 'Aplikasi Agrikultur & Peternakan Terpadu',
         theme_color: '#10b981',
         background_color: '#ffffff',
         display: 'standalone',

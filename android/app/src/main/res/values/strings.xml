@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">TaniCare</string>
-    <string name="title_activity_main">TaniCare</string>
-    <string name="package_name">com.tanicare.app</string>
-    <string name="custom_url_scheme">com.tanicare.app</string>
+    <string name="app_name">AgroPlus</string>
+    <string name="title_activity_main">AgroPlus</string>
+    <string name="package_name">com.agroplus.app</string>
+    <string name="custom_url_scheme">com.agroplus.app</string>
 </resources>

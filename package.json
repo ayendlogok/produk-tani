@@ -1,7 +1,7 @@
 {
   "name": "produk-tani",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.1",
     "@capacitor/browser": "^8.0.3",
     "@capacitor/core": "^8.3.1",
     "firebase": "^12.12.1",
@@ -21,6 +20,7 @@
     "react-router-dom": "^7.14.1"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.3.1",
     "@capacitor/cli": "^8.3.1",
     "@eslint/js": "^9.39.4",
     "@types/react": "^19.2.14",

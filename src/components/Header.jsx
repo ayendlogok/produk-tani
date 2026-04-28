@@ -22,7 +22,7 @@ const Header = () => {
       <div className="container header-content">
         <NavLink to="/" className="logo">
           <Leaf className="logo-icon" size={28} />
-          <span className="logo-text text-gradient">TaniCare</span>
+          <span className="logo-text text-gradient">AgroPlus</span>
         </NavLink>
 
         <nav className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>

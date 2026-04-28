@@ -4,9 +4,11 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 
 const AuthContext = createContext();
@@ -19,6 +21,8 @@ export const AuthProvider = ({ children }) => {
   // Splash screen timer — always shows exactly 2.5 seconds
   useEffect(() => {
     const timer = setTimeout(() => setSplashDone(true), 2500);
+    // Explicitly set persistence to LOCAL
+    setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence error:", err));
     return () => clearTimeout(timer);
   }, []);
 
@@ -37,13 +41,17 @@ export const AuthProvider = ({ children }) => {
           try {
             const docRef = doc(db, 'users', firebaseUser.uid);
             const docSnap = await getDoc(docRef);
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.displayName || docSnap.data()?.name || 'Petani',
-              plan: docSnap.data()?.plan || 'Free Tier',
-              createdAt: docSnap.data()?.createdAt || null,
-            });
+              setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                name: firebaseUser.displayName || docSnap.data()?.name || 'Petani',
+                plan: docSnap.data()?.plan || 'Free Tier',
+                age: docSnap.data()?.age || '',
+                gender: docSnap.data()?.gender || 'pria',
+                address: docSnap.data()?.address || '',
+                phoneNumber: docSnap.data()?.phoneNumber || '',
+                createdAt: docSnap.data()?.createdAt || null,
+              });
           } catch (firestoreErr) {
             // Firestore error — still set user from Auth data
             setUser({
@@ -98,6 +106,15 @@ export const AuthProvider = ({ children }) => {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
+  // UPDATE USER DATA
+  const updateUserData = async (data) => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.uid);
+    // Use setDoc with merge: true to create the document if it doesn't exist
+    await setDoc(docRef, data, { merge: true });
+    setUser(prev => ({ ...prev, ...data }));
+  };
+
   // LOGOUT
   const logout = async () => {
     await signOut(auth);
@@ -108,7 +125,7 @@ export const AuthProvider = ({ children }) => {
   const isReady = splashDone && !loading;
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading: !isReady }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUserData, loading: !isReady }}>
       {children}
     </AuthContext.Provider>
   );

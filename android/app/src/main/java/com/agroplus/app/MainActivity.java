@@ -1,4 +1,4 @@
-package com.tanicare.app;
+package com.agroplus.app;
 
 import com.getcapacitor.BridgeActivity;
 

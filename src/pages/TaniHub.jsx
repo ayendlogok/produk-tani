@@ -32,7 +32,7 @@ const TaniHub = () => {
   const [selectedArt, setSelectedArt] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { role: 'ai', text: 'Halo Pak/Bu! Saya TaniTalk AI. Ada yang bisa saya bantu buat tanaman di kebun? Tanya apa aja boleh, pake bahasa santai juga gapapa.' }
+    { role: 'ai', text: 'Halo Rekan! Saya AgroTalk AI. Ada yang bisa saya bantu terkait proyek pertanian, peternakan, perikanan, atau perhutanan Anda?' }
   ]);
   const [userInput, setUserInput] = useState('');
   const chatEndRef = useRef(null);
@@ -168,7 +168,7 @@ const TaniHub = () => {
 
     try {
       // Menggunakan Pollinations AI - Model LLM Sejati yang paham semua bahasa dan konteks
-      const systemPrompt = "Kamu adalah TaniTalk, asisten AI pakar pertanian super cerdas buatan TaniCare. Jawab pertanyaan pengguna dengan ramah, akurat, dan gunakan bahasa yang sama persis dengan yang dipakai pengguna (bisa Sunda, Jawa, Inggris, dll). Jangan terlalu panjang, langsung ke intinya saja.";
+      const systemPrompt = "Kamu adalah AgroTalk, asisten AI pakar agrikultur, peternakan, perikanan, dan perhutanan buatan AgroPlus. Kamu memiliki pengetahuan luas tentang semua fitur aplikasi ini (seperti 'Kelola Proyek' untuk mendaftarkan aset, 'Marketplace' untuk fitur Jual Hasil Panen, dan 'AI Scanner Pintar' di Dashboard yang bisa mendeteksi penyakit hewan/tanaman). Jawab pertanyaan pengguna dengan ramah, akurat, informatif, dan gunakan bahasa yang sama persis dengan yang dipakai pengguna. Jangan terlalu panjang, langsung ke intinya saja namun berikan wawasan yang luas.";
       const url = `https://text.pollinations.ai/prompt/${encodeURIComponent(currentInput)}?system=${encodeURIComponent(systemPrompt)}`;
       
       const response = await fetch(url);
@@ -188,7 +188,7 @@ const TaniHub = () => {
     } catch (error) {
       // FALLBACK: Jika API utama down
       setTimeout(() => {
-        let fallbackResponse = "Mohon maaf, server AI utama sedang sangat sibuk. Namun secara umum: Pastikan kelembapan tanah terjaga, hindari genangan air, dan berikan pupuk berimbang. Ada hal spesifik yang ingin dicatat di fitur Kelola Lahan?";
+        let fallbackResponse = "Mohon maaf, server AI utama sedang sangat sibuk. Secara umum: Pastikan kondisi lingkungan proyek Anda tetap optimal dan asupan nutrisi terjaga. Ada hal spesifik yang ingin dicatat di fitur Kelola Proyek?";
         
         setChatMessages(prev => {
           const filtered = prev.filter(m => !m.isLoading);
@@ -344,7 +344,7 @@ const TaniHub = () => {
                   <div className="ai-profile">
                      <div className="avatar-mini"><Bot size={18} /></div>
                      <div className="status-wrap">
-                        <h5>TaniTalk Expert AI</h5>
+                        <h5>AgroTalk Expert AI</h5>
                         <span className="status-online">Online (Aktif)</span>
                      </div>
                   </div>
@@ -363,7 +363,7 @@ const TaniHub = () => {
                <div className="chat-input-area glass-panel">
                   <input 
                     type="text" 
-                    placeholder="Contoh: 'Kenapa cabe saya banyak yang layu ya?'" 
+                    placeholder="Contoh: 'Bagaimana cara mencegah penyakit pada ikan lele?'" 
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}

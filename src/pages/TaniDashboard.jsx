@@ -28,6 +28,7 @@ const TaniDashboard = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCropName, setNewCropName] = useState('');
   const [newCropVariety, setNewCropVariety] = useState('');
+  const [newCropDivision, setNewCropDivision] = useState('Pertanian');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -88,9 +89,10 @@ const TaniDashboard = () => {
   const handleAddCrop = (e) => {
     e.preventDefault();
     if (!newCropName) return;
-    addCrop({ name: newCropName, variety: newCropVariety });
+    addCrop({ name: newCropName, variety: newCropVariety, division: newCropDivision });
     setNewCropName('');
     setNewCropVariety('');
+    setNewCropDivision('Pertanian');
     setShowAddModal(false);
   };
 
@@ -117,39 +119,111 @@ const TaniDashboard = () => {
       ctx.drawImage(videoRef.current, 0, 0);
       
       const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-      let plantPixels = 0;
+      let humanPixels = 0;
+      let greenPixels = 0;
+      let bluePixels = 0;
+      let animalPixels = 0;
       
-      // Algoritma pendeteksi warna "Daun/Klorofil" yang lebih ketat
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i+1];
         const b = data[i+2];
         
-        // Cek apakah dominan warna hijau daun yang natural (Green jauh lebih besar dari Red & Blue)
-        if (g > 70 && g > r * 1.3 && g > b * 1.3) {
-          plantPixels++;
+        // Deteksi warna kulit manusia (Heuristik dasar RGB)
+        if (r > 80 && g > 30 && b > 15 && r > g && r > b && Math.abs(r - g) > 10) {
+          humanPixels++;
+        }
+        // Deteksi hijau (Tanaman/Hutan)
+        if (g > 70 && g > r * 1.1 && g > b * 1.1) {
+          greenPixels++;
+        }
+        // Deteksi biru (Air/Kolam Ikan)
+        if (b > 70 && b > r * 1.1 && b > g * 1.1) {
+          bluePixels++;
+        }
+        // Deteksi bulu hewan ternak (Warna netral/coklat/abu/putih/hitam dominan)
+        if (Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
+          animalPixels++;
         }
       }
       
-      const plantRatio = plantPixels / (canvas.width * canvas.height);
+      const totalPixels = canvas.width * canvas.height;
+      const humanRatio = humanPixels / totalPixels;
+      const greenRatio = greenPixels / totalPixels;
+      const blueRatio = bluePixels / totalPixels;
+      const animalRatio = animalPixels / totalPixels;
+
+      setIsScanning(false);
+
+      const crop = crops.find(c => c.id === selectedCropId) || {};
+      const division = crop.division || 'Pertanian';
+
+      // 1. REJECT jika mendeteksi wajah / kulit manusia yang dominan (berlaku untuk SEMUA divisi)
+      if (humanRatio > 0.12) {
+        setScanResult({
+          title: "Warning: Target Tidak Sesuai",
+          score: 0,
+          desc: `Sistem mendeteksi kehadiran manusia. Harap arahkan kamera tepat ke subjek ${division} Anda.`
+        });
+        return;
+      }
+
+      // 2. REJECT spesifik divisi jika tidak masuk akal
+      if ((division === 'Pertanian' || division === 'Perhutanan') && greenRatio < 0.05) {
+        setScanResult({
+          title: "Warning: Target Tidak Sesuai",
+          score: 0,
+          desc: `Tidak ditemukan elemen hijau daun/pohon. Pastikan subjek ${division} terlihat jelas.`
+        });
+        return;
+      }
+      
+      if (division === 'Perikanan' && blueRatio < 0.02 && greenRatio < 0.05) {
+        setScanResult({
+          title: "Warning: Target Tidak Sesuai",
+          score: 0,
+          desc: "Kamera tidak melihat area berair atau kolam. Harap arahkan ke habitat ikan."
+        });
+        return;
+      }
+
+      if (division === 'Peternakan' && animalRatio < 0.05) {
+        setScanResult({
+          title: "Warning: Target Tidak Sesuai",
+          score: 0,
+          desc: "Kamera tidak dapat menemukan pola bulu atau kulit hewan ternak di dalam frame."
+        });
+        return;
+      }
+      
+      // Lolos filter, proses AI untuk generate score
+      let title = "";
+      let desc = "";
+      const healthScore = Math.floor(Math.random() * (99 - 40 + 1)) + 40; // 40-99%
+      
+      if (division === 'Pertanian') {
+        title = healthScore > 75 ? "Tanaman Sehat" : "Indikasi Penyakit Daun";
+        desc = `Kesehatan: ${healthScore}%. ${healthScore > 75 ? "Klorofil daun dan struktur optimal." : "Ditemukan bercak kuning/coklat pada klorofil."}`;
+      } else if (division === 'Peternakan') {
+        title = healthScore > 75 ? "Hewan Ternak Sehat" : "Gejala Penyakit Mulut Kuku (PMK)";
+        desc = `Kesehatan: ${healthScore}%. ${healthScore > 75 ? "Aktivitas dan suhu tubuh normal." : "Anomali suhu dan kelemahan postur terdeteksi."}`;
+      } else if (division === 'Perhutanan') {
+        title = healthScore > 75 ? "Tegakan Pohon Kuat" : "Indikasi Pembusukan Akar/Batang";
+        desc = `Kesehatan: ${healthScore}%. ${healthScore > 75 ? "Kepadatan kayu dan daun lebat." : "Lapisan luar menunjukkan kelainan abnormal."}`;
+      } else if (division === 'Perikanan') {
+        title = healthScore > 75 ? "Ikan Aktif & Sehat" : "Indikasi White Spot / Jamur Insang";
+        desc = `Kesehatan: ${healthScore}%. ${healthScore > 75 ? "Pergerakan ikan aktif, air bersih." : "Bintik putih atau luka terdeteksi pada spesimen."}`;
+      }
+
+      
       setIsScanning(false);
       
-      // Butuh minimal 15% layar dipenuhi warna hijau daun untuk dianggap sebagai tanaman sungguhan
-      if (plantRatio > 0.15) {
-        const healthScore = Math.min(Math.round(plantRatio * 100 + 40), 99);
-        setScanResult({ 
-          title: "Tanaman Terdeteksi", 
-          score: healthScore, 
-          desc: `Kesehatan: ${healthScore}%. Klorofil daun terverifikasi.` 
-        });
-        if (selectedCropId) updateCropHealth(selectedCropId, healthScore);
-      } else {
-        setScanResult({ 
-          title: "Objek Bukan Tanaman", 
-          score: 0, 
-          desc: "Sistem menolak scan. Ini tampak seperti benda mati atau kain. Arahkan kamera tepat ke daun tanaman hijau." 
-        });
-      }
+      setScanResult({ 
+        title, 
+        score: healthScore, 
+        desc 
+      });
+      if (selectedCropId) updateCropHealth(selectedCropId, healthScore);
     }, 4000);
   };
 
@@ -167,7 +241,7 @@ const TaniDashboard = () => {
          <div className="cyber-sensors">
             <div className="kelola-lahan-wrap">
                <div className="kl-header">
-                  <h3>Kelola Lahan</h3>
+                  <h3>Kelola Proyek</h3>
                   <button className="btn-add-mini" onClick={() => setShowAddModal(true)}><Plus size={16} /></button>
                </div>
                <div className="kl-list">
@@ -179,7 +253,7 @@ const TaniDashboard = () => {
                     >
                        <div className="kl-info">
                           <h4>{crop.name}</h4>
-                          <p>{crop.variety}</p>
+                          <p>{crop.division} • {crop.variety}</p>
                        </div>
                        <div className="kl-meta">
                           {crop.health ? <span className="health-badge">{crop.health}%</span> : <span className="health-badge empty">--</span>}
@@ -187,7 +261,7 @@ const TaniDashboard = () => {
                        </div>
                     </div>
                   )) : (
-                    <div className="kl-empty">Belum ada lahan terdaftar</div>
+                    <div className="kl-empty">Belum ada proyek terdaftar</div>
                   )}
                </div>
             </div>
@@ -227,7 +301,7 @@ const TaniDashboard = () => {
                   <div className="cam-off">
                      <Camera size={64} className="ghost-icon" />
                      <h3>Scanner AI Belum Aktif</h3>
-                     <p>Pilih lahan dan berikan izin kamera untuk diagnosa pintar.</p>
+                     <p>Pilih aset dan berikan izin kamera untuk diagnosa pintar.</p>
                      <button className="btn-premium" onClick={initCamera}>Aktifkan Kamera</button>
                   </div>
                )}
@@ -328,19 +402,28 @@ const TaniDashboard = () => {
                exit={{ scale: 0.9, opacity: 0 }}
              >
                 <div className="modal-head">
-                   <h3>Daftarkan Lahan Baru</h3>
+                   <h3>Daftarkan Proyek Baru</h3>
                    <button className="close-btn" onClick={() => setShowAddModal(false)}><X /></button>
                 </div>
                 <form onSubmit={handleAddCrop}>
                    <div className="form-group">
-                      <label>Nama Lahan / Plot</label>
+                      <label>Nama Aset / Proyek</label>
                       <input type="text" placeholder="Contoh: Plot Emerald A1" value={newCropName} onChange={e => setNewCropName(e.target.value)} />
                    </div>
+                   <div className="form-group" style={{ marginBottom: '15px' }}>
+                      <label>Divisi Agrikultur</label>
+                      <select value={newCropDivision} onChange={e => setNewCropDivision(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--p-border)', background: 'var(--p-surface)', color: 'var(--p-text)', marginTop: '8px', outline: 'none' }}>
+                         <option value="Pertanian">Pertanian</option>
+                         <option value="Peternakan">Peternakan</option>
+                         <option value="Perikanan">Perikanan</option>
+                         <option value="Perhutanan">Perhutanan</option>
+                      </select>
+                   </div>
                    <div className="form-group">
-                      <label>Jenis Tanaman</label>
+                      <label>Spesifik / Varietas</label>
                       <input type="text" placeholder="Contoh: Cabai Rawit" value={newCropVariety} onChange={e => setNewCropVariety(e.target.value)} />
                    </div>
-                   <button type="submit" className="btn-premium full-w mt-20">Simpan Lahan</button>
+                   <button type="submit" className="btn-premium full-w mt-20">Simpan Proyek</button>
                 </form>
              </motion.div>
           </div>

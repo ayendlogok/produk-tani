@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Star, ExternalLink, 
-  Box
+  Box, Plus, X
 } from 'lucide-react';
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import './TaniMarket.css';
 
 // Curated Premium Agricultural Products
@@ -51,19 +53,75 @@ const PRODUCTS = [
   { id: 32, name: 'Arang Sekam Steril (10L)', price: 15000, category: 'Tanah', rate: 4.8, img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com' },
   { id: 33, name: 'Bibit Avocado Aligator (1m)', price: 185000, category: 'Bibit', rate: 5.0, img: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
   { id: 34, name: 'Bio-Fungisida Ramah Lingkungan', price: 48000, category: 'Nutrisi', rate: 4.7, img: 'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com' },
-  { id: 35, name: 'Smart LED Growlight UV-Full', price: 890000, category: 'Alat', rate: 4.9, img: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
+  { id: 35, name: 'Smart LED Growlight UV-Full', price: 890000, category: 'Alat', rate: 4.9, img: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Pertanian' },
+  
+  // PETERNAKAN
+  { id: 36, name: 'Pakan Ayam Pedaging Premium 50kg', price: 350000, category: 'Pakan', rate: 4.8, img: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com', division: 'Peternakan' },
+  { id: 37, name: 'Vitamin & Antibiotik Sapi', price: 125000, category: 'Nutrisi', rate: 4.9, img: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Peternakan' },
+
+  // PERIKANAN
+  { id: 38, name: 'Pelet Ikan Lele Super Protein 10kg', price: 110000, category: 'Pakan', rate: 4.8, img: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com', division: 'Perikanan' },
+  { id: 39, name: 'Pompa Aerator Kolam Koi', price: 250000, category: 'Alat', rate: 4.7, img: 'https://images.unsplash.com/photo-1524704796725-9fc3044a58b2?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Perikanan' },
+
+  // PERHUTANAN
+  { id: 40, name: 'Bibit Pohon Jati Emas', price: 45000, category: 'Bibit', rate: 4.9, img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com', division: 'Perhutanan' },
+  { id: 41, name: 'Chainsaw Pro Max', price: 1850000, category: 'Alat', rate: 4.8, img: 'https://images.unsplash.com/photo-1590211186717-b73a46fb1f81?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Perhutanan' },
+
+  // HASIL PANEN (MOCK USER LISTINGS)
+  { id: 42, name: 'Susu Sapi Segar (10L)', price: 150000, category: 'Hasil Panen', rate: 5.0, img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&q=80&w=400', shop: 'https://wa.me/628123456789', division: 'Hasil Panen' },
+  { id: 43, name: 'Ikan Nila Segar (5kg)', price: 160000, category: 'Hasil Panen', rate: 4.9, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=400', shop: 'https://wa.me/628123456789', division: 'Hasil Panen' },
+
 ];
 
 const TaniMarket = () => {
   const [filter, setFilter] = useState('Semua');
   const [search, setSearch] = useState('');
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const [sellForm, setSellForm] = useState({ name: '', price: '', division: 'Pertanian', desc: '' });
+
+  useEffect(() => {
+    const q = query(collection(db, 'marketListings'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const listings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserListings(listings);
+    }, (err) => {
+      console.warn("Error fetching market listings: ", err);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleSell = async (e) => {
+    e.preventDefault();
+    if(!sellForm.name) return;
+    
+    try {
+      await addDoc(collection(db, 'marketListings'), {
+        name: sellForm.name,
+        price: parseInt(sellForm.price) || 0,
+        category: 'Hasil Panen',
+        rate: 5.0,
+        img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400',
+        shop: 'https://wa.me/62800000000',
+        division: sellForm.division,
+        desc: sellForm.desc,
+        createdAt: serverTimestamp()
+      });
+      setShowSellModal(false);
+      setSellForm({ name: '', price: '', division: 'Pertanian', desc: '' });
+      setFilter('Hasil Panen');
+    } catch(err) {
+      alert("Gagal mempublikasikan jualan: " + err.message);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter(p => 
-      (filter === 'Semua' || p.category === filter) &&
+    const allItems = [...userListings, ...PRODUCTS.map(p => ({...p, division: p.division || 'Pertanian'}))];
+    return allItems.filter(p => 
+      (filter === 'Semua' || p.division === filter) &&
       p.name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [filter, search]);
+  }, [filter, search, userListings]);
 
   return (
     <div className="market-ultra">
@@ -80,7 +138,7 @@ const TaniMarket = () => {
       </div>
 
       <div className="category-scroll">
-         {['Semua', 'Bibit', 'Nutrisi', 'Alat', 'Tanah'].map(c => (
+         {['Semua', 'Pertanian', 'Peternakan', 'Perikanan', 'Perhutanan', 'Hasil Panen'].map(c => (
            <button 
              key={c} 
              className={`pill ${filter === c ? 'active' : ''}`}
@@ -91,8 +149,11 @@ const TaniMarket = () => {
          ))}
       </div>
 
-      <div className="catalog-meta">
+      <div className="catalog-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
          <p>Menampilkan {filteredProducts.length} Produk Pilihan</p>
+         <button className="btn-premium" style={{ padding: '8px 16px', fontSize: '14px' }} onClick={() => setShowSellModal(true)}>
+            <Plus size={16} /> Jual Hasil Panen
+         </button>
       </div>
 
       <div className="product-grid-ultra">
@@ -131,8 +192,51 @@ const TaniMarket = () => {
       
       <div className="market-footer-hint">
          <Box size={24} className="ghost-icon" />
-         <p>TaniCare Premium Market - Kualitas Terjamin.</p>
+         <p>AgroPlus Premium Market - Kualitas Terjamin.</p>
       </div>
+
+      <AnimatePresence>
+        {showSellModal && (
+          <div className="modal-overlay-silk flex-center">
+             <motion.div 
+               className="add-modal-silk glass-panel"
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.9, opacity: 0 }}
+               style={{ zIndex: 100 }}
+             >
+                <div className="modal-head">
+                   <h3>Jual Hasil Panen</h3>
+                   <button className="close-btn" onClick={() => setShowSellModal(false)}><X /></button>
+                </div>
+                <form onSubmit={handleSell}>
+                   <div className="form-group">
+                      <label>Nama Produk</label>
+                      <input type="text" placeholder="Contoh: Ikan Nila Segar 5kg" value={sellForm.name} onChange={e => setSellForm({...sellForm, name: e.target.value})} />
+                   </div>
+                   <div className="form-group" style={{ marginBottom: '15px' }}>
+                      <label>Sektor</label>
+                      <select value={sellForm.division} onChange={e => setSellForm({...sellForm, division: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--p-border)', background: 'var(--p-surface)', color: 'var(--p-text)', marginTop: '8px', outline: 'none' }}>
+                         <option value="Pertanian">Pertanian</option>
+                         <option value="Peternakan">Peternakan</option>
+                         <option value="Perikanan">Perikanan</option>
+                         <option value="Perhutanan">Perhutanan</option>
+                      </select>
+                   </div>
+                   <div className="form-group">
+                      <label>Harga (Rp)</label>
+                      <input type="number" placeholder="Contoh: 150000" value={sellForm.price} onChange={e => setSellForm({...sellForm, price: e.target.value})} />
+                   </div>
+                   <div className="form-group">
+                      <label>Deskripsi (Opsional)</label>
+                      <input type="text" placeholder="Contoh: Siap kirim via Gojek" value={sellForm.desc} onChange={e => setSellForm({...sellForm, desc: e.target.value})} />
+                   </div>
+                   <button type="submit" className="btn-premium full-w mt-20">Pasarkan Sekarang</button>
+                </form>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

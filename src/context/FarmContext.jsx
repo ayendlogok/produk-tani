@@ -58,6 +58,7 @@ export const FarmProvider = ({ children }) => {
       await addDoc(cropsRef, {
         name: newCrop.name || 'Plot Baru',
         variety: newCrop.variety || 'Umum',
+        division: newCrop.division || 'Pertanian',
         health: null,
         lastScan: null,
         status: 'Online',
