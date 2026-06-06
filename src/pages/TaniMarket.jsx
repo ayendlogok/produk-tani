@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, Star, ExternalLink, 
-  Box, Plus, X
+import {
+  Search, Star, ExternalLink,
+  Box, Plus, X, Edit, Trash2,
+  TrendingUp, TrendingDown, Clock, Gavel, ShieldCheck, QrCode
 } from 'lucide-react';
-import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import './TaniMarket.css';
 
@@ -16,7 +17,7 @@ const PRODUCTS = [
   { id: 3, name: 'Bibit Jagung Hybrid Perkasa', price: 85000, category: 'Bibit', rate: 4.7, img: 'https://images.unsplash.com/photo-1628155981180-2646d616886e?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
   { id: 4, name: 'Bibit Selada Hidroponik (1000 biji)', price: 35000, category: 'Bibit', rate: 5.0, img: 'https://images.unsplash.com/photo-1524486361537-8ad15938e1a3?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com' },
   { id: 5, name: 'Bibit Tomat Cherry Red Velvet', price: 55000, category: 'Bibit', rate: 4.9, img: 'https://images.unsplash.com/photo-1594901061363-93ca1db97839?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
-  
+
   // NUTRISI
   { id: 6, name: 'Pupuk Organik Cair (POC) 1L', price: 65000, category: 'Nutrisi', rate: 4.8, img: 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com' },
   { id: 7, name: 'Nutrisi AB Mix Sayuran Daun', price: 95000, category: 'Nutrisi', rate: 4.9, img: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
@@ -54,7 +55,7 @@ const PRODUCTS = [
   { id: 33, name: 'Bibit Avocado Aligator (1m)', price: 185000, category: 'Bibit', rate: 5.0, img: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id' },
   { id: 34, name: 'Bio-Fungisida Ramah Lingkungan', price: 48000, category: 'Nutrisi', rate: 4.7, img: 'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com' },
   { id: 35, name: 'Smart LED Growlight UV-Full', price: 890000, category: 'Alat', rate: 4.9, img: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Pertanian' },
-  
+
   // PETERNAKAN
   { id: 36, name: 'Pakan Ayam Pedaging Premium 50kg', price: 350000, category: 'Pakan', rate: 4.8, img: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&q=80&w=400', shop: 'https://tokopedia.com', division: 'Peternakan' },
   { id: 37, name: 'Vitamin & Antibiotik Sapi', price: 125000, category: 'Nutrisi', rate: 4.9, img: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=400', shop: 'https://shopee.co.id', division: 'Peternakan' },
@@ -71,14 +72,20 @@ const PRODUCTS = [
   { id: 42, name: 'Susu Sapi Segar (10L)', price: 150000, category: 'Hasil Panen', rate: 5.0, img: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&q=80&w=400', shop: 'https://wa.me/628123456789', division: 'Hasil Panen' },
   { id: 43, name: 'Ikan Nila Segar (5kg)', price: 160000, category: 'Hasil Panen', rate: 4.9, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=400', shop: 'https://wa.me/628123456789', division: 'Hasil Panen' },
 
+  // LIVE AUCTION ITEMS (LELANG)
+  { id: 44, name: 'Kopi Arabika Gayo (Grade A - 50kg)', price: 2500000, category: 'Hasil Panen', rate: 5.0, img: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?auto=format&fit=crop&q=80&w=400', isAuction: true, currentBid: 2800000, bidders: 12, endTime: Date.now() + 3600000, division: 'Pertanian' },
 ];
 
 const TaniMarket = () => {
   const [filter, setFilter] = useState('Semua');
   const [search, setSearch] = useState('');
   const [showSellModal, setShowSellModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [userListings, setUserListings] = useState([]);
-  const [sellForm, setSellForm] = useState({ name: '', price: '', division: 'Pertanian', desc: '' });
+  const [sellForm, setSellForm] = useState({ name: '', price: '', division: 'Pertanian', desc: '', img: '', platform: 'WhatsApp', shop: '' });
+  const [formError, setFormError] = useState('');
+  
+  const [showCertModal, setShowCertModal] = useState(null); // stores product object to show cert
 
   useEffect(() => {
     const q = query(collection(db, 'marketListings'), orderBy('createdAt', 'desc'));
@@ -91,152 +98,399 @@ const TaniMarket = () => {
     return () => unsubscribe();
   }, []);
 
+  const getDefaultImage = (division) => {
+    switch (division) {
+      case 'Peternakan': return 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=400';
+      case 'Perikanan': return 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=400';
+      case 'Perhutanan': return 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=400';
+      case 'Pertanian':
+      default: return 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400';
+    }
+  };
+
+  const handleEdit = (product) => {
+    setEditingId(product.id);
+    setSellForm({
+      name: product.name,
+      price: product.price,
+      division: product.division || 'Pertanian',
+      desc: product.desc || '',
+      img: product.img || '',
+      platform: product.platform || 'WhatsApp',
+      shop: product.shop || ''
+    });
+    setShowSellModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+      try {
+        await deleteDoc(doc(db, 'marketListings', id));
+      } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+      }
+    }
+  };
+
+  const closeModal = () => {
+    setShowSellModal(false);
+    setEditingId(null);
+    setFormError('');
+    setSellForm({ name: '', price: '', division: 'Pertanian', desc: '', img: '', platform: 'WhatsApp', shop: '' });
+  };
+
+  const handleRateProduct = async (product, givenRating) => {
+    if (typeof product.id !== 'string') {
+      alert("Fitur rating interaktif hanya tersedia untuk produk Hasil Panen dari komunitas TaniHub.");
+      return;
+    }
+    const newCount = (product.ratingCount || 0) + 1;
+    const newSum = (product.ratingSum || 0) + givenRating;
+    const newRate = (newSum / newCount).toFixed(1);
+
+    try {
+      await updateDoc(doc(db, 'marketListings', product.id), {
+        ratingCount: newCount,
+        ratingSum: newSum,
+        rate: parseFloat(newRate)
+      });
+      alert(`Berhasil memberikan rating ${givenRating} bintang!`);
+    } catch (err) {
+      alert("Gagal mengirim rating: " + err.message);
+    }
+  };
+
   const handleSell = async (e) => {
     e.preventDefault();
-    if(!sellForm.name) return;
-    
+    setFormError('');
+
+    if (!sellForm.name) {
+      setFormError("Mohon isi nama produk.");
+      return;
+    }
+
+    let finalShopLink = sellForm.shop || '';
+    // Auto-format jika platform WA dan user hanya mengetik nomor
+    if (finalShopLink && sellForm.platform === 'WhatsApp' && !finalShopLink.startsWith('http')) {
+      let cleanNum = finalShopLink.replace(/\D/g, '');
+      if (cleanNum.startsWith('0')) {
+        cleanNum = '62' + cleanNum.substring(1);
+      }
+      finalShopLink = `https://wa.me/${cleanNum}`;
+    }
+
+    const finalImg = sellForm.img ? sellForm.img : getDefaultImage(sellForm.division);
+
     try {
-      await addDoc(collection(db, 'marketListings'), {
-        name: sellForm.name,
-        price: parseInt(sellForm.price) || 0,
-        category: 'Hasil Panen',
-        rate: 5.0,
-        img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400',
-        shop: 'https://wa.me/62800000000',
-        division: sellForm.division,
-        desc: sellForm.desc,
-        createdAt: serverTimestamp()
-      });
-      setShowSellModal(false);
-      setSellForm({ name: '', price: '', division: 'Pertanian', desc: '' });
+      if (editingId) {
+        await updateDoc(doc(db, 'marketListings', editingId), {
+          name: sellForm.name,
+          price: parseInt(sellForm.price) || 0,
+          img: finalImg,
+          division: sellForm.division,
+          desc: sellForm.desc,
+          platform: sellForm.platform,
+          shop: finalShopLink
+        });
+      } else {
+        await addDoc(collection(db, 'marketListings'), {
+          name: sellForm.name,
+          price: parseInt(sellForm.price) || 0,
+          category: 'Hasil Panen',
+          rate: 0,
+          ratingCount: 0,
+          ratingSum: 0,
+          img: finalImg,
+          shop: finalShopLink,
+          platform: sellForm.platform,
+          division: sellForm.division,
+          desc: sellForm.desc,
+          createdAt: serverTimestamp()
+        });
+      }
+      closeModal();
       setFilter('Hasil Panen');
-    } catch(err) {
-      alert("Gagal mempublikasikan jualan: " + err.message);
+    } catch (err) {
+      setFormError("Gagal menyimpan jualan: " + err.message);
     }
   };
 
   const filteredProducts = useMemo(() => {
-    const allItems = [...userListings, ...PRODUCTS.map(p => ({...p, division: p.division || 'Pertanian'}))];
-    return allItems.filter(p => 
-      (filter === 'Semua' || p.division === filter) &&
-      p.name.toLowerCase().includes(search.toLowerCase())
+    const allItems = [...userListings, ...PRODUCTS.map(p => ({ ...p, division: p.division || 'Pertanian' }))];
+    return allItems.filter(p =>
+      (filter === 'Semua' ||
+        p.division === filter ||
+        (filter === 'Hasil Panen' && p.category === 'Hasil Panen')) &&
+      (p.name || '').toLowerCase().includes((search || '').toLowerCase())
     );
   }, [filter, search, userListings]);
 
   return (
     <div className="market-ultra">
       <div className="market-top glass-panel">
-         <div className="search-box-ultra">
-            <Search size={18} />
-            <input 
-              type="text" 
-              placeholder="Cari produk pertanian premium..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-         </div>
+        <div className="search-box-ultra">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Cari produk pertanian premium..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="market-radar glass-panel">
+        <div className="radar-title">
+          <TrendingUp size={16} /> Radar Harga Pasar Hari Ini
+        </div>
+        <div className="radar-scroll">
+          <div className="radar-item up"><span className="comodity">Cabai Rawit</span><span className="price">Rp 65.000/kg</span><TrendingUp size={12}/></div>
+          <div className="radar-item down"><span className="comodity">Bawang Merah</span><span className="price">Rp 25.000/kg</span><TrendingDown size={12}/></div>
+          <div className="radar-item up"><span className="comodity">Tomat Cherry</span><span className="price">Rp 15.000/kg</span><TrendingUp size={12}/></div>
+          <div className="radar-item up"><span className="comodity">Kopi Arabika</span><span className="price">Rp 80.000/kg</span><TrendingUp size={12}/></div>
+        </div>
       </div>
 
       <div className="category-scroll">
-         {['Semua', 'Pertanian', 'Peternakan', 'Perikanan', 'Perhutanan', 'Hasil Panen'].map(c => (
-           <button 
-             key={c} 
-             className={`pill ${filter === c ? 'active' : ''}`}
-             onClick={() => setFilter(c)}
-           >
-              {c}
-           </button>
-         ))}
+        {['Semua', 'Pertanian', 'Peternakan', 'Perikanan', 'Perhutanan', 'Hasil Panen'].map(c => (
+          <button
+            key={c}
+            className={`pill ${filter === c ? 'active' : ''}`}
+            onClick={() => setFilter(c)}
+          >
+            {c}
+          </button>
+        ))}
       </div>
 
       <div className="catalog-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-         <p>Menampilkan {filteredProducts.length} Produk Pilihan</p>
-         <button className="btn-premium" style={{ padding: '8px 16px', fontSize: '14px' }} onClick={() => setShowSellModal(true)}>
-            <Plus size={16} /> Jual Hasil Panen
-         </button>
+        <p>Menampilkan {filteredProducts.length} Produk Pilihan</p>
+        <button className="btn-premium" style={{ padding: '8px 16px', fontSize: '14px' }} onClick={() => setShowSellModal(true)}>
+          <Plus size={16} /> Jual Hasil Panen
+        </button>
       </div>
 
       <div className="product-grid-ultra">
-         <AnimatePresence mode="popLayout">
-            {filteredProducts.map((p) => (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ y: -5 }}
-                className="product-card-ultra" 
-                key={p.id}
-              >
-                 <div className="p-img-wrap">
-                    <img src={p.img} alt={p.name} loading="lazy" />
-                    <div className="p-tag glass-panel">{p.category}</div>
-                 </div>
-                 <div className="p-info-ultra">
-                    <div className="p-rate"><Star size={12} fill="var(--p-sun)" /> {p.rate}</div>
-                    <h4>{p.name}</h4>
-                    <div className="p-footer-direct">
-                       <span className="p-price">Rp {p.price.toLocaleString()}</span>
-                       <button 
-                         className="btn-buy-now"
-                         onClick={() => window.open(p.shop, '_blank')}
-                       >
-                          Beli <ExternalLink size={14} />
-                       </button>
+        <AnimatePresence mode="popLayout">
+          {filteredProducts.map((p) => (
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ y: -5 }}
+              className={`product-card-ultra ${typeof p.id === 'string' ? 'community-product' : ''}`}
+              key={p.id}
+              style={typeof p.id === 'string' ? { border: '1px solid var(--p-emerald)', boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)' } : {}}
+            >
+              <div className="p-img-wrap">
+                <img src={p.img} alt={p.name} loading="lazy" />
+                <div className="p-tag glass-panel">{p.category}</div>
+                {p.isAuction && (
+                  <div className="auction-badge pulse-fast">
+                    <Gavel size={12} /> LELANG LIVE
+                  </div>
+                )}
+                {typeof p.id === 'string' && (
+                  <div className="community-badge" style={{ position: 'absolute', top: '10px', left: '10px', background: 'var(--p-emerald)', color: 'white', padding: '4px 10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px', zIndex: 10 }}>
+                    🌟 Hasil Panen Anda
+                  </div>
+                )}
+                {typeof p.id === 'string' && (
+                  <div className="user-actions" style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }}>
+                    <button onClick={() => setShowCertModal(p)} style={{ background: 'rgba(16, 185, 129, 0.9)', border: '1px solid var(--p-emerald-light)', borderRadius: '50%', padding: '6px', cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Sertifikat Blockchain">
+                      <ShieldCheck size={16} />
+                    </button>
+                    <button onClick={() => handleEdit(p)} style={{ background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Edit Produk">
+                      <Edit size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(p.id)} style={{ background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', padding: '6px', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Hapus Produk">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="p-info-ultra">
+                <div
+                  className="p-rate"
+                  onClick={() => {
+                    if (typeof p.id === 'string') {
+                      const val = prompt(`Beri rating untuk ${p.name} (1-5):`, "5");
+                      if (val && !isNaN(val) && val >= 1 && val <= 5) {
+                        handleRateProduct(p, parseInt(val));
+                      } else if (val) {
+                        alert("Masukkan angka dari 1 sampai 5.");
+                      }
+                    }
+                  }}
+                  style={{ cursor: typeof p.id === 'string' ? 'pointer' : 'default' }}
+                  title={typeof p.id === 'string' ? "Klik untuk beri rating" : ""}
+                >
+                  <Star size={12} fill="var(--p-sun)" /> {p.rate || 0} {p.ratingCount ? `(${p.ratingCount})` : ''}
+                </div>
+                <h4>{p.name}</h4>
+                {p.isAuction ? (
+                  <div className="auction-info">
+                    <div className="bid-stats">
+                      <span><Clock size={12}/> 45m 12s</span>
+                      <span>{p.bidders} Bids</span>
                     </div>
-                 </div>
-              </motion.div>
-            ))}
-         </AnimatePresence>
-      </div>
-      
-      <div className="market-footer-hint">
-         <Box size={24} className="ghost-icon" />
-         <p>AgroPlus Premium Market - Kualitas Terjamin.</p>
+                    <div className="p-footer-direct">
+                      <span className="p-price auction">Rp {p.currentBid.toLocaleString()}</span>
+                      <button className="btn-bid-now">Bid Sekarang</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-footer-direct">
+                    <span className="p-price">Rp {p.price.toLocaleString()}</span>
+                    {p.shop ? (
+                      <button
+                        className="btn-buy-now"
+                        onClick={() => window.open(p.shop, '_blank')}
+                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                      >
+                        Beli di {p.platform || 'Toko'} <ExternalLink size={12} />
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--p-text)', opacity: 0.7 }}>Tanpa Link</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {showSellModal && (
-          <div className="modal-overlay-silk flex-center">
-             <motion.div 
-               className="add-modal-silk glass-panel"
-               initial={{ scale: 0.9, opacity: 0 }}
-               animate={{ scale: 1, opacity: 1 }}
-               exit={{ scale: 0.9, opacity: 0 }}
-               style={{ zIndex: 100 }}
-             >
-                <div className="modal-head">
-                   <h3>Jual Hasil Panen</h3>
-                   <button className="close-btn" onClick={() => setShowSellModal(false)}><X /></button>
-                </div>
-                <form onSubmit={handleSell}>
-                   <div className="form-group">
-                      <label>Nama Produk</label>
-                      <input type="text" placeholder="Contoh: Ikan Nila Segar 5kg" value={sellForm.name} onChange={e => setSellForm({...sellForm, name: e.target.value})} />
-                   </div>
-                   <div className="form-group" style={{ marginBottom: '15px' }}>
-                      <label>Sektor</label>
-                      <select value={sellForm.division} onChange={e => setSellForm({...sellForm, division: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--p-border)', background: 'var(--p-surface)', color: 'var(--p-text)', marginTop: '8px', outline: 'none' }}>
-                         <option value="Pertanian">Pertanian</option>
-                         <option value="Peternakan">Peternakan</option>
-                         <option value="Perikanan">Perikanan</option>
-                         <option value="Perhutanan">Perhutanan</option>
-                      </select>
-                   </div>
-                   <div className="form-group">
-                      <label>Harga (Rp)</label>
-                      <input type="number" placeholder="Contoh: 150000" value={sellForm.price} onChange={e => setSellForm({...sellForm, price: e.target.value})} />
-                   </div>
-                   <div className="form-group">
-                      <label>Deskripsi (Opsional)</label>
-                      <input type="text" placeholder="Contoh: Siap kirim via Gojek" value={sellForm.desc} onChange={e => setSellForm({...sellForm, desc: e.target.value})} />
-                   </div>
-                   <button type="submit" className="btn-premium full-w mt-20">Pasarkan Sekarang</button>
-                </form>
-             </motion.div>
+      <div className="market-footer-hint">
+        <Box size={24} className="ghost-icon" />
+        <p>AgroPlus Premium Market - Kualitas Terjamin.</p>
+      </div>
+
+      {showSellModal && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.8)', zIndex: 99999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(6px)'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+          <div className="add-modal-silk" style={{ position: 'relative' }}>
+            <div className="modal-head">
+              <h3>{editingId ? 'Edit Hasil Panen' : 'Jual Hasil Panen'}</h3>
+              <button type="button" className="close-btn" onClick={closeModal}><X /></button>
+            </div>
+            <form onSubmit={handleSell}>
+              <div className="form-group">
+                <label>Nama Produk</label>
+                <input type="text" placeholder="Contoh: Ikan Nila Segar 5kg" value={sellForm.name} onChange={e => setSellForm({ ...sellForm, name: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Sektor</label>
+                <select value={sellForm.division} onChange={e => setSellForm({ ...sellForm, division: e.target.value })}>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Pertanian">Pertanian</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Peternakan">Peternakan</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Perikanan">Perikanan</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Perhutanan">Perhutanan</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Platform Penjualan</label>
+                <select value={sellForm.platform} onChange={e => setSellForm({ ...sellForm, platform: e.target.value })}>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="WhatsApp">WhatsApp</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Shopee">Shopee</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Tokopedia">Tokopedia</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Facebook">Facebook / Meta</option>
+                  <option style={{ background: '#1a1f1e', color: '#fff' }} value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Link Toko / No. WA (Opsional)</label>
+                <input type="text" placeholder="Contoh: https://shopee.co.id/... atau 08123..." value={sellForm.shop} onChange={e => setSellForm({ ...sellForm, shop: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Harga (Rp)</label>
+                <input type="number" placeholder="Contoh: 150000" value={sellForm.price} onChange={e => setSellForm({ ...sellForm, price: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>URL Gambar (Opsional)</label>
+                <input type="text" placeholder="https://..." value={sellForm.img} onChange={e => setSellForm({ ...sellForm, img: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Deskripsi (Opsional)</label>
+                <input type="text" placeholder="Contoh: Siap kirim via Gojek" value={sellForm.desc} onChange={e => setSellForm({ ...sellForm, desc: e.target.value })} />
+              </div>
+              {formError && <div style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '12px', fontWeight: '700' }}>{formError}</div>}
+              <button type="submit" className="btn-premium full-w mt-20">Pasarkan Sekarang</button>
+            </form>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+
+      {showCertModal && (
+        <div className="modal-overlay-silk flex-center" onClick={() => setShowCertModal(null)}>
+          <motion.div 
+            className="blockchain-modal glass-panel"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="modal-head">
+              <h3><ShieldCheck className="text-emerald" style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }}/> Blockchain Traceability</h3>
+              <button className="close-btn" onClick={() => setShowCertModal(null)}><X /></button>
+            </div>
+            
+            <div className="cert-content">
+              <div className="cert-header-info">
+                 <img src={showCertModal.img} alt="Product" />
+                 <div>
+                    <h4>{showCertModal.name}</h4>
+                    <p className="cert-id">Block ID: 0x{Math.random().toString(16).substr(2, 8).toUpperCase()}</p>
+                 </div>
+              </div>
+              
+              <div className="timeline-container">
+                 <div className="timeline-item">
+                    <div className="tl-dot"></div>
+                    <div className="tl-content">
+                       <h5>Bibit Ditanam</h5>
+                       <span className="tl-date">12 Maret 2026 - Tervalidasi Node #A1</span>
+                    </div>
+                 </div>
+                 <div className="timeline-item">
+                    <div className="tl-dot"></div>
+                    <div className="tl-content">
+                       <h5>Irigasi Pintar Aktif</h5>
+                       <span className="tl-date">12 Mar - 20 Mei (Disiram otomatis 45x)</span>
+                    </div>
+                 </div>
+                 <div className="timeline-item">
+                    <div className="tl-dot"></div>
+                    <div className="tl-content">
+                       <h5>Audit AI Scanner (98% Sehat)</h5>
+                       <span className="tl-date">21 Mei 2026 - Tanpa Residu Kimia</span>
+                    </div>
+                 </div>
+                 <div className="timeline-item active">
+                    <div className="tl-dot pulse-fast"></div>
+                    <div className="tl-content">
+                       <h5 className="text-emerald-light">Dipanen & Disertifikasi</h5>
+                       <span className="tl-date">Hari Ini - Grade A Premium</span>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="qr-section glass-panel">
+                 <QrCode size={48} className="text-emerald" />
+                 <p>Scan QR ini di toko untuk melihat riwayat panen.</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

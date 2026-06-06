@@ -4,7 +4,8 @@ import {
   CloudRain, Thermometer, Droplets, Wind, 
   Activity, ShieldAlert, Map as MapIcon,
   Camera, Zap, Power, AlertTriangle, CheckCircle2,
-  Maximize2, Sun, ArrowLeft, RefreshCw, Radio, X, Plus, Trash2
+  Maximize2, Sun, ArrowLeft, RefreshCw, Radio, X, Plus, Trash2,
+  CloudLightning, Leaf
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './TaniDashboard.css';
@@ -22,8 +23,17 @@ const TaniDashboard = () => {
   const [stream, setStream] = useState(null);
   const [stats, setStats] = useState({ temp: 28.5, humidity: 62, soil: 45 });
   const [automation, setAutomation] = useState({ light: true, water: false });
-  const [monitorMode, setMonitorMode] = useState('map');
+  const [monitorMode, setMonitorMode] = useState('grid'); // Default to grid view
   const [isCctvConnected, setIsCctvConnected] = useState(false);
+  const [showSmartRules, setShowSmartRules] = useState(false);
+  const [weatherType, setWeatherType] = useState('rain'); // 'rain', 'sunny', 'storm'
+  const [ecoScore, setEcoScore] = useState(850);
+  const [showEcoReward, setShowEcoReward] = useState(false);
+
+  const [smartRules, setSmartRules] = useState([
+    { id: 1, condition: '💧 Kelembapan < 30%', logic: 'DAN', condition2: '☀️ Cuaca Cerah', action: 'Nyalakan Irigasi 15m', active: true },
+    { id: 2, condition: '🌡️ Suhu > 35°C', logic: 'ATAU', condition2: '🔥 UV Ekstrem', action: 'Nyalakan Kipas/UV-C', active: false },
+  ]);
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCropName, setNewCropName] = useState('');
@@ -228,12 +238,29 @@ const TaniDashboard = () => {
   };
 
   return (
-    <div className="dashboard-ultra-page">
+    <div className={`dashboard-ultra-page immersive-weather ${weatherType}`}>
+      {/* WEATHER EFFECTS LAYER */}
+      {weatherType === 'rain' && <div className="rain-layer"></div>}
+      {weatherType === 'storm' && <div className="storm-layer"><div className="lightning-flash"></div></div>}
+      {weatherType === 'sunny' && <div className="sun-flare-layer"></div>}
+
       <div className="ultra-header-area">
-         <h2>Pusat Kendali <span className="text-glow">Cyber-Farm</span></h2>
-         <div className="node-status glass-panel">
-            <Radio size={16} className="blink" />
-            <span>Master Node: A1-Active</span>
+         <div>
+           <h2>Pusat Kendali <span className="text-glow">Cyber-Farm</span></h2>
+           <div className="gamification-bar">
+             <div className="level-badge">LV. 12</div>
+             <div className="xp-container">
+               <div className="xp-text"><span>Petani Master</span><span>2400 / 3000 XP</span></div>
+               <div className="xp-track"><div className="xp-fill" style={{ width: '80%' }}></div></div>
+             </div>
+           </div>
+         </div>
+         <div className="eco-badge glass-panel" onClick={() => setShowEcoReward(true)}>
+            <div className="eco-icon-wrap"><Leaf size={16} /></div>
+            <div className="eco-info">
+              <span>Eco-Score</span>
+              <strong>{ecoScore} 🪙</strong>
+            </div>
          </div>
       </div>
 
@@ -334,30 +361,71 @@ const TaniDashboard = () => {
 
          <div className="cyber-automation card glass-panel">
             <div className="auto-section">
-               <h3>Sistem Otomasi</h3>
-               <div className="automation-list">
-                  <div className="auto-item" onClick={() => setAutomation(a => ({ ...a, light: !a.light }))}>
-                     <div className="auto-info"><Sun size={18} /><span>Growlight UV-C</span></div>
-                     <div className={`auto-toggle ${automation.light ? 'active' : ''}`}><div className="ball"></div></div>
-                  </div>
-                  <div className="auto-item" onClick={() => setAutomation(a => ({ ...a, water: !a.water }))}>
-                     <div className="auto-info"><Droplets size={18} /><span>Irigasi Tetes</span></div>
-                     <div className={`auto-toggle ${automation.water ? 'active' : ''}`}><div className="ball"></div></div>
-                  </div>
+               <div className="auto-header-flex">
+                 <h3>Sistem Otomasi</h3>
+                 <button className="btn-smart-rules" onClick={() => setShowSmartRules(!showSmartRules)}>
+                   <Zap size={14} /> Smart Rules
+                 </button>
                </div>
+
+               {showSmartRules ? (
+                 <div className="smart-rules-container">
+                   {smartRules.map(rule => (
+                     <div key={rule.id} className={`smart-rule-card ${rule.active ? 'active' : ''}`}>
+                       <div className="rule-logic">
+                         <span className="if">JIKA</span> <span className="cond">{rule.condition}</span>
+                         <span className="logic">{rule.logic}</span> <span className="cond">{rule.condition2}</span>
+                         <span className="then">MAKA</span> <span className="act">{rule.action}</span>
+                       </div>
+                       <div className={`auto-toggle ${rule.active ? 'active' : ''}`} onClick={() => {
+                         setSmartRules(rules => rules.map(r => r.id === rule.id ? { ...r, active: !r.active } : r));
+                       }}><div className="ball"></div></div>
+                     </div>
+                   ))}
+                   <button className="btn-add-rule"><Plus size={14} /> Tambah Aturan Baru</button>
+                 </div>
+               ) : (
+                 <div className="automation-list">
+                    <div className="auto-item" onClick={() => setAutomation(a => ({ ...a, light: !a.light }))}>
+                       <div className="auto-info"><Sun size={18} /><span>Growlight UV-C</span></div>
+                       <div className={`auto-toggle ${automation.light ? 'active' : ''}`}><div className="ball"></div></div>
+                    </div>
+                    <div className="auto-item" onClick={() => setAutomation(a => ({ ...a, water: !a.water }))}>
+                       <div className="auto-info"><Droplets size={18} /><span>Irigasi Tetes</span></div>
+                       <div className={`auto-toggle ${automation.water ? 'active' : ''}`}><div className="ball"></div></div>
+                    </div>
+                 </div>
+               )}
             </div>
             
             <div className="monitor-section-ultra">
                <div className="monitor-header">
                   <h3>Field Vision</h3>
                   <div className="monitor-switcher glass-panel">
+                     <button className={monitorMode === 'grid' ? 'active' : ''} onClick={() => setMonitorMode('grid')}>Grid 3D</button>
                      <button className={monitorMode === 'map' ? 'active' : ''} onClick={() => setMonitorMode('map')}>Maps</button>
                      <button className={monitorMode === 'cctv' ? 'active' : ''} onClick={() => setMonitorMode('cctv')}>CCTV</button>
                   </div>
                </div>
 
                <div className="monitor-viewport glass-panel">
-                  {monitorMode === 'map' ? (
+                  {monitorMode === 'grid' ? (
+                    <div className="virtual-grid-view">
+                      <div className="grid-container">
+                        {[1, 2, 3, 4, 5, 6].map(block => (
+                          <div key={block} className={`grid-block ${block === 2 ? 'warning pulsing' : block === 5 ? 'active' : ''}`}>
+                            <span className="block-id">Blok {block}</span>
+                            {block === 2 && <span className="alert-ping"></span>}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid-legend">
+                        <span className="leg-item"><div className="dot green"></div> Optimal</span>
+                        <span className="leg-item"><div className="dot red"></div> Kritis</span>
+                        <span className="leg-item"><div className="dot blue"></div> Irigasi Aktif</span>
+                      </div>
+                    </div>
+                  ) : monitorMode === 'map' ? (
                     <div className="map-view-box interactive" onClick={() => window.open(`https://maps.google.com/?q=${stats.lat || -6.2},${stats.lng || 106.8}`, '_blank')}>
                        <div className="radar-ping"></div>
                        <img src={`https://static-maps.yandex.ru/1.x/?ll=${stats.lng || 106.8},${stats.lat || -6.2}&z=17&l=sat`} alt="map" />
@@ -424,13 +492,36 @@ const TaniDashboard = () => {
                       <input type="text" placeholder="Contoh: Cabai Rawit" value={newCropVariety} onChange={e => setNewCropVariety(e.target.value)} />
                    </div>
                    <button type="submit" className="btn-premium full-w mt-20">Simpan Proyek</button>
-                </form>
-             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+                 </form>
+              </motion.div>
+           </div>
+         )}
+
+         {/* Eco Reward Modal */}
+         {showEcoReward && (
+           <div className="modal-overlay-silk flex-center eco-reward-overlay" onClick={() => setShowEcoReward(false)}>
+              <motion.div 
+                className="eco-reward-modal glass-panel"
+                initial={{ scale: 0.5, opacity: 0, rotateY: 90 }}
+                animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                onClick={e => e.stopPropagation()}
+              >
+                 <div className="eco-sparkles"></div>
+                 <Leaf size={64} className="eco-leaf text-emerald" />
+                 <h3>Selamat! Anda Pahlawan Bumi 🌍</h3>
+                 <p>Penggunaan sensor tanah & irigasi presisi Anda menghemat <strong>2.000 liter air</strong> bulan ini.</p>
+                 <div className="eco-credits-big">
+                    <span>+500</span> Eco-Credits
+                 </div>
+                 <button className="btn-premium full-w" onClick={() => { setEcoScore(ecoScore + 500); setShowEcoReward(false); }}>Klaim Reward</button>
+              </motion.div>
+           </div>
+         )}
+       </AnimatePresence>
+     </div>
+   );
 };
 
 export default TaniDashboard;

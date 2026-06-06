@@ -116,6 +116,29 @@
   text-align: center;
 }
 
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--p-emerald-light);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  opacity: 0.8;
+  padding: 0;
+}
+
+.btn-text:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.auth-error-text {
+  color: #fca5a5;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .auth-trust-badge {
   margin-top: 35px;
   display: flex;

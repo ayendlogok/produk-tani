@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, BookOpen, Users, MessageSquare, Share2, 
-  Heart, ArrowLeft, X, Send, Bot, Sparkles, Zap, Droplets
+  Heart, ArrowLeft, X, Send, Bot, Sparkles, Zap, Droplets, Mic, Activity
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Browser } from '@capacitor/browser';
@@ -35,6 +35,7 @@ const TaniHub = () => {
     { role: 'ai', text: 'Halo Rekan! Saya AgroTalk AI. Ada yang bisa saya bantu terkait proyek pertanian, peternakan, perikanan, atau perhutanan Anda?' }
   ]);
   const [userInput, setUserInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef(null);
 
   const [communities, setCommunities] = useState([
@@ -196,6 +197,14 @@ const TaniHub = () => {
         });
       }, 1000);
     }
+  };
+
+  const handleVoiceCommand = () => {
+    setIsListening(true);
+    setTimeout(() => {
+      setIsListening(false);
+      setUserInput("Bagaimana cara mencegah hama pada tanaman padi?");
+    }, 3000);
   };
 
   return (
@@ -368,8 +377,24 @@ const TaniHub = () => {
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   />
+                  <button className={`btn-voice-silk ${isListening ? 'listening' : ''}`} onClick={handleVoiceCommand}>
+                     {isListening ? <Activity size={18} /> : <Mic size={18} />}
+                  </button>
                   <button className="send-btn-silk" onClick={handleSendMessage}><Send size={18} /></button>
                </div>
+               
+               {isListening && (
+                 <div className="voice-hologram-overlay">
+                   <div className="soundwave-container">
+                     <div className="bar"></div>
+                     <div className="bar"></div>
+                     <div className="bar"></div>
+                     <div className="bar"></div>
+                     <div className="bar"></div>
+                   </div>
+                   <p className="pulse-text">Mendengarkan Suara Anda...</p>
+                 </div>
+               )}
             </motion.div>
           </>
         )}

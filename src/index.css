@@ -26,14 +26,22 @@
 }
 
 [data-theme='dark'] {
-  --p-bg: #020617;
-  --p-surface: #0f172a;
-  --p-card: rgba(30, 41, 59, 0.5);
-  --p-text: #f8fafc;
-  --p-text-muted: #94a3b8;
-  --p-glass: rgba(30, 41, 59, 0.4);
-  --p-border: rgba(255, 255, 255, 0.05);
-  --p-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+  --p-bg: #050505; /* True Black */
+  --p-surface: #0a0a0a;
+  --p-card: rgba(10, 10, 10, 0.7);
+  --p-text: #ffffff;
+  --p-text-muted: #8892b0;
+  --p-glass: rgba(5, 5, 5, 0.6);
+  --p-border: rgba(16, 185, 129, 0.2); /* Neon Green Border */
+  --p-shadow: 0 0 30px rgba(16, 185, 129, 0.15); /* Neon Glow */
+  
+  /* Cyberpunk Overrides */
+  --p-emerald: #00ff9d; /* Neon Green */
+  --p-emerald-light: #39ff14;
+  --p-emerald-deep: #008f51;
+  --p-sky: #00e5ff; /* Cyan */
+  --p-rose: #ff007f; /* Magenta */
+  --p-sunlight: #ffea00;
 }
 
 * {

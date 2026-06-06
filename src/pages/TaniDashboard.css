@@ -14,6 +14,55 @@
   text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
 }
 
+/* Immersive Weather */
+.dashboard-ultra-page.immersive-weather { position: relative; z-index: 1; }
+.rain-layer, .storm-layer, .sun-flare-layer {
+  position: fixed; inset: 0; pointer-events: none; z-index: -1;
+}
+.rain-layer {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><line x1="10" y1="0" x2="5" y2="10" stroke="rgba(255,255,255,0.2)" stroke-width="1"/><line x1="50" y1="-10" x2="45" y2="5" stroke="rgba(255,255,255,0.3)" stroke-width="1"/></svg>');
+  background-size: 50px 50px;
+  animation: rainDrop 0.5s linear infinite;
+  opacity: 0.8;
+}
+@keyframes rainDrop { from { background-position: 0 0; } to { background-position: -25px 50px; } }
+.sun-flare-layer {
+  background: radial-gradient(circle at top right, rgba(255, 166, 0, 0.3) 0%, transparent 40%);
+  mix-blend-mode: screen;
+}
+.storm-layer {
+  background: rgba(0,0,10, 0.5);
+}
+.lightning-flash {
+  position: absolute; inset: 0; background: white; opacity: 0;
+  animation: flash 8s infinite;
+}
+@keyframes flash { 0%, 95%, 98% { opacity: 0; } 96%, 99% { opacity: 0.8; } }
+
+/* Gamification */
+.gamification-bar { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+.level-badge { 
+  background: linear-gradient(135deg, var(--p-emerald), var(--p-emerald-light)); 
+  padding: 6px 12px; border-radius: 8px; font-weight: 900; font-size: 0.8rem; color: #fff;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+.xp-container { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; }
+.xp-text { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 800; color: var(--p-text-muted); }
+.xp-text span:first-child { color: var(--p-emerald-light); }
+.xp-track { height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+.xp-fill { height: 100%; background: var(--p-emerald-light); box-shadow: 0 0 10px var(--p-emerald-light); }
+
+.eco-badge {
+  padding: 8px 16px; border-radius: 100px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; border: 1px solid var(--p-emerald); background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); transition: 0.3s;
+}
+.eco-badge:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
+.eco-icon-wrap { background: var(--p-emerald-light); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+.eco-info { display: flex; flex-direction: column; }
+.eco-info span { font-size: 0.6rem; font-weight: 800; color: var(--p-text-muted); }
+.eco-info strong { font-size: 0.85rem; color: var(--p-emerald-light); }
+
 .node-status {
   padding: 10px 20px;
   border-radius: 100px;
@@ -141,6 +190,34 @@
 .auto-toggle.active { background: var(--p-emerald); justify-content: flex-end; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
 .auto-toggle .ball { width: 18px; height: 18px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
+/* Smart Rules */
+.auto-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-smart-rules { 
+  background: rgba(16, 185, 129, 0.1); border: 1px solid var(--p-emerald); 
+  color: var(--p-emerald-light); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; 
+  font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.3s;
+}
+.btn-smart-rules:hover { background: var(--p-emerald); color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+
+.smart-rules-container { display: flex; flex-direction: column; gap: 12px; }
+.smart-rule-card { 
+  background: rgba(255,255,255,0.03); border: 1px solid var(--p-border); 
+  border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center;
+  transition: 0.3s;
+}
+.smart-rule-card.active { border-color: var(--p-emerald); background: rgba(16, 185, 129, 0.05); }
+.rule-logic { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.75rem; font-weight: 800; }
+.rule-logic .if, .rule-logic .then, .rule-logic .logic { color: var(--p-text-muted); font-size: 0.65rem; }
+.rule-logic .cond { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; }
+.rule-logic .act { background: rgba(16, 185, 129, 0.2); color: var(--p-emerald-light); padding: 4px 8px; border-radius: 6px; }
+
+.btn-add-rule {
+  background: none; border: 1px dashed var(--p-border); color: var(--p-text-muted);
+  padding: 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+}
+.btn-add-rule:hover { border-color: var(--p-emerald-light); color: var(--p-emerald-light); }
+
 .gps-telemetry {
   position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7);
   padding: 8px 12px; border-radius: 12px; display: flex; flex-direction: column;
@@ -211,6 +288,39 @@
 
 @keyframes radar { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
 
+/* Virtual Grid View */
+.virtual-grid-view { height: 100%; width: 100%; display: flex; flex-direction: column; padding: 15px; }
+.grid-container {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; flex: 1;
+}
+.grid-block {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--p-border); border-radius: 10px;
+  position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: 0.3s;
+}
+.grid-block:hover { background: rgba(255,255,255,0.1); }
+.grid-block.active { border-color: var(--p-sky); background: rgba(14, 165, 233, 0.1); box-shadow: inset 0 0 15px rgba(14, 165, 233, 0.2); }
+.grid-block.warning { border-color: var(--p-rose); background: rgba(225, 29, 72, 0.1); }
+.grid-block.pulsing { animation: pulse-warn 2s infinite; }
+.block-id { font-size: 0.75rem; font-weight: 800; color: var(--p-text-muted); }
+.alert-ping { 
+  position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; 
+  background: var(--p-rose); border-radius: 50%; box-shadow: 0 0 10px var(--p-rose); 
+}
+
+@keyframes pulse-warn {
+  0% { box-shadow: inset 0 0 0 rgba(225, 29, 72, 0); }
+  50% { box-shadow: inset 0 0 20px rgba(225, 29, 72, 0.5); }
+  100% { box-shadow: inset 0 0 0 rgba(225, 29, 72, 0); }
+}
+
+.grid-legend { display: flex; gap: 15px; margin-top: 15px; justify-content: center; }
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 800; color: var(--p-text-muted); }
+.leg-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.green { background: var(--p-emerald-light); box-shadow: 0 0 5px var(--p-emerald-light); }
+.dot.red { background: var(--p-rose); box-shadow: 0 0 5px var(--p-rose); }
+.dot.blue { background: var(--p-sky); box-shadow: 0 0 5px var(--p-sky); }
+
 .btn-disconnect {
   position: absolute; right: 15px; top: 50px; background: rgba(239, 68, 68, 0.2); 
   border: 1px solid #ef4444; color: white; padding: 6px 12px; border-radius: 10px;
@@ -271,6 +381,20 @@
   padding: 14px 18px; border-radius: 15px; color: white; outline: none;
 }
 .form-group input:focus { border-color: var(--p-emerald); }
+
+/* Eco Gamification Modal */
+.eco-reward-modal {
+  background: var(--p-surface); width: 450px; text-align: center; padding: 40px;
+  border-radius: 30px; position: relative; overflow: hidden;
+}
+.eco-leaf { color: var(--p-emerald-light); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--p-emerald)); }
+.eco-reward-modal h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--p-text); }
+.eco-reward-modal p { color: var(--p-text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.6; }
+.eco-credits-big { 
+  font-size: 1.2rem; font-weight: 900; background: rgba(16, 185, 129, 0.1);
+  padding: 15px; border-radius: 15px; margin-bottom: 30px; color: var(--p-text-muted);
+}
+.eco-credits-big span { font-size: 2.5rem; color: var(--p-emerald-light); text-shadow: 0 0 20px var(--p-emerald-light); }
 
 @media (max-width: 1400px) {
   .cyber-grid { grid-template-columns: 1fr; }

@@ -434,4 +434,10 @@ const Layout = ({ children }) => {
   );
 };
 
+import PropTypes from 'prop-types';
+
+Layout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 export default Layout;

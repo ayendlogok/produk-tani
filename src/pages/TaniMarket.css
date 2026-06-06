@@ -13,6 +13,25 @@
   background: none; border: none; color: white; padding: 12px 0; width: 100%; font-size: 0.9rem;
 }
 
+/* Market Radar */
+.market-radar {
+  padding: 15px; border-radius: 20px; margin-bottom: 25px;
+  background: rgba(16, 185, 129, 0.05); border: 1px solid var(--p-emerald);
+}
+.radar-title { font-size: 0.8rem; font-weight: 800; color: var(--p-emerald-light); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.radar-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 5px; }
+.radar-scroll::-webkit-scrollbar { display: none; }
+.radar-item {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 15px; border-radius: 12px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--p-border); min-width: 140px;
+}
+.radar-item .comodity { font-size: 0.75rem; font-weight: 800; color: var(--p-text-muted); }
+.radar-item .price { font-size: 0.9rem; font-weight: 900; }
+.radar-item.up { border-color: rgba(16, 185, 129, 0.3); }
+.radar-item.up .price { color: var(--p-emerald-light); }
+.radar-item.down { border-color: rgba(244, 63, 94, 0.3); }
+.radar-item.down .price { color: var(--p-rose); }
+
 .category-scroll {
   display: flex; 
   flex-wrap: wrap;
@@ -66,6 +85,31 @@
 }
 .btn-buy-now:hover { background: var(--p-emerald-light); transform: scale(1.05); }
 
+/* Live Bidding */
+.auction-badge {
+  position: absolute; top: 15px; right: 15px; background: var(--p-rose);
+  color: white; padding: 5px 12px; border-radius: 100px; font-size: 0.65rem;
+  font-weight: 900; display: flex; align-items: center; gap: 6px; z-index: 10;
+  box-shadow: 0 0 15px var(--p-rose);
+}
+.pulse-fast { animation: pulse-fast 1s infinite; }
+@keyframes pulse-fast {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.auction-info { margin-top: 15px; }
+.bid-stats { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--p-rose); margin-bottom: 8px; }
+.bid-stats span { display: flex; align-items: center; gap: 4px; }
+.p-price.auction { color: var(--p-rose); }
+.btn-bid-now {
+  padding: 8px 18px; border-radius: 12px; border: none;
+  background: var(--p-rose); color: white; font-weight: 800; font-size: 0.75rem;
+  cursor: pointer; transition: 0.3s;
+}
+.btn-bid-now:hover { background: #f43f5e; transform: scale(1.05); box-shadow: 0 0 15px rgba(244, 63, 94, 0.5); }
+
 .catalog-meta { margin-bottom: 25px; padding: 0 10px; }
 .catalog-meta p { font-size: 0.8rem; font-weight: 700; color: var(--p-emerald-light); opacity: 0.8; }
 
@@ -90,3 +134,79 @@
   .catalog-meta p { font-size: 0.7rem; }
   .pill { padding: 8px 16px; font-size: 0.75rem; }
 }
+
+/* ── Modal Jual Hasil Panen ─────────────────────────────────── */
+.add-modal-silk {
+  background: #121615; width: 420px; max-width: 95vw; padding: 30px;
+  border-radius: 30px; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  border: 1px solid var(--p-border); max-height: 90vh; overflow-y: auto;
+}
+
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 25px;
+}
+.modal-head h3 { font-size: 1.3rem; font-weight: 800; }
+.close-btn {
+  background: none; border: none; color: var(--p-text-muted);
+  cursor: pointer; transition: 0.3s;
+}
+.close-btn:hover { color: var(--p-rose); }
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block; font-size: 0.75rem; font-weight: 800;
+  margin-bottom: 8px; color: var(--p-text-muted);
+}
+.form-group input,
+.form-group select {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--p-border);
+  padding: 12px 16px; border-radius: 15px; color: white; outline: none;
+  font-size: 0.9rem; box-sizing: border-box; transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus { border-color: var(--p-emerald); }
+
+.form-group select option {
+  background-color: #1a1f1e;
+  color: #ffffff;
+  padding: 8px;
+}
+
+.btn-premium {
+  background: var(--p-emerald); color: white; border: none;
+  padding: 14px 20px; border-radius: 15px; font-weight: 800; font-size: 0.9rem;
+  cursor: pointer; transition: 0.3s; display: inline-flex;
+  justify-content: center; align-items: center; gap: 8px;
+}
+.btn-premium:hover { background: var(--p-emerald-light); transform: translateY(-2px); }
+.full-w { width: 100%; }
+.mt-20 { margin-top: 20px; }
+
+/* Blockchain Certificate Modal */
+.blockchain-modal {
+  background: var(--p-surface); width: 450px; max-width: 95vw; padding: 30px;
+  border-radius: 30px; border: 1px solid var(--p-emerald);
+}
+.cert-header-info { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+.cert-header-info img { width: 60px; height: 60px; border-radius: 15px; object-fit: cover; }
+.cert-header-info h4 { font-size: 1.1rem; margin-bottom: 4px; }
+.cert-id { font-family: monospace; font-size: 0.75rem; color: var(--p-emerald-light); background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 8px; display: inline-block; }
+
+.timeline-container { position: relative; margin-bottom: 30px; padding-left: 20px; border-left: 2px dashed var(--p-border); }
+.timeline-item { position: relative; margin-bottom: 20px; }
+.timeline-item:last-child { margin-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -26px; top: 0; width: 10px; height: 10px;
+  background: var(--p-text-muted); border-radius: 50%; box-shadow: 0 0 0 4px var(--p-surface);
+}
+.timeline-item.active .tl-dot { background: var(--p-emerald-light); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }
+.tl-content h5 { font-size: 0.85rem; font-weight: 800; margin-bottom: 4px; }
+.tl-date { font-size: 0.7rem; color: var(--p-text-muted); }
+
+.qr-section {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px; border-radius: 20px; background: rgba(16, 185, 129, 0.05);
+  border: 1px dashed var(--p-emerald); text-align: center; gap: 10px;
+}
+.qr-section p { font-size: 0.75rem; color: var(--p-text-muted); font-weight: 800; }

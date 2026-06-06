@@ -1,16 +1,26 @@
-# React + Vite
+# AgroPlus / TaniCare
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AgroPlus adalah Asisten Digital Cerdas (Smart Digital Assistant) untuk sektor Agrikultur, Peternakan, Perikanan, dan Perhutanan yang memadukan kekuatan *Artificial Intelligence* (AI) dan *Internet of Things* (IoT).
 
-Currently, two official plugins are available:
+Aplikasi ini menggunakan stack teknologi modern untuk performa tinggi:
+- **React.js** dengan Vite untuk kecepatan loading dan pengalaman pengguna terbaik (Lazy Loading & Suspense).
+- **Firebase Authentication & Firestore** untuk keamanan data, manajemen pengguna, dan sinkronisasi data *real-time*.
+- **React Hook Form & Zod** untuk manajemen formulir terpusat dan validasi skema.
+- **Tailwind CSS / Vanilla CSS** untuk antarmuka pengguna responsif dan dinamis.
+- **Vitest & React Testing Library** untuk infrastruktur pengujian (*testing*).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Memulai Proyek Secara Lokal
 
-## React Compiler
+1. Pastikan Anda telah menginstal Node.js dan npm.
+2. Jalankan perintah berikut untuk menginstal seluruh dependensi:
+   ```bash
+   npm install
+   ```
+3. Mulai server *development*:
+   ```bash
+   npm run dev
+   ```
+4. Buka browser pada [http://localhost:5173/](http://localhost:5173/) untuk melihat aplikasi.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Buku Panduan Lengkap
+Untuk panduan penggunaan fitur lengkap, silakan merujuk pada file [PANDUAN_PENGGUNA.md](./PANDUAN_PENGGUNA.md).
